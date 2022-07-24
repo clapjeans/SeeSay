@@ -32,7 +32,7 @@ function handleMessageSubmit(event){
     });
 }
 
-//닉네임 submit event 메시지
+//닉네임 submit event 메시지 -->이거 없애지마 없앳는데 오류뜸
 function handleNicknameSubmit(event) {
     event.preventDefault();
     //const input = room.querySelector 쿼리셀렉터는 첫번째 있는것만 가져옴
@@ -57,6 +57,7 @@ async function showRoom(){
    // msgForm.addEventListener("submit",handleMessageSubmit);
    // nameForm.addEventListener("submit",handleNicknameSubmit);
 
+   await getMedia(); //------추가 -----------
     //withRTC
     makeConnection();
 
@@ -64,28 +65,16 @@ async function showRoom(){
 
 
 //enter Room 함수 실행 
-function handleRoomSubmit(event) {
+async function handleRoomSubmit(event) {
     event.preventDefault();
     const input = form.querySelector("input");
-    socket.emit("enter_room", input.value,showRoom); //enterRoom 버튼을 누르면 input.value 이름을 가지고 showRoom함수가실행
+   await showRoom();
+    socket.emit("enter_room", input.value); //enterRoom 버튼을 누르면 input.value 이름을 가지고 showRoom함수가실행
     roomName=input.value; 
     input.value = "";
   }
 
 form.addEventListener("submit",handleRoomSubmit);
-
-
-
-
-
-//처음 방들어갔을때 메시지보내기 
-socket.on("welcome", (user,newCount)=> {
-    const h3 = room.querySelector("h3");
-    h3.innerText = `Room ${roomName} (${newCount})`;
-    addMessage("welcome joined");
-    //addMessage(`${user}joined`);
-
-});
 
 function addMessage(message){
   console.log(message);
@@ -107,13 +96,17 @@ function addMessage(message){
   chat.innerHTML += html;
 }
 //WRT서버 peerA--------------------------------------
-socket.on("welcome", async () => {
+socket.on("welcome", async (newCount) => {
+  const h3 = room.querySelector("h3");
+  h3.innerText = `Room ${roomName} (${newCount})`;
+  addMessage("welcome joined");
   const offer = await myPeerConnection.createOffer();
   myPeerConnection.setLocalDescription(offer);
   console.log("sent the offer");
   socket.emit("offer", offer, roomName);
  
 });
+
 
 //peerB
 socket.on("offer", async (offer) => {
@@ -175,25 +168,38 @@ socket.on("bye", (left,newCount)=> {
     try{
         const devices = await navigator.mediaDevices.enumerateDevices();
         const cameras =devices.filter(device => device.kind =="videoinput");
+        const currentCamera = myStream.getVideoTracks()[0];
         cameras.forEach(camera =>{
-            const option =document.createElement("option");
-            option.value=camera.deviceId
-            option.innerText=camera.label;
-            cameraSelect.appendChild(option);
-        })
-    }catch(e){
-        console.log(e);
-    }
-    }
+          const option = document.createElement("option");
+          option.value = camera.deviceId;
+          option.innerText = camera.label;
+          if (currentCamera.label === camera.label) {
+           option.selected = true;
+      }
+      cameraSelect.appendChild(option);
+    });
+  } catch (e) {
+    console.log(e);
+  }
+}
 
-  async function getMedia() {
+  async function getMedia(deviceId) {
+    const initialConstrains = {
+      audio: true,
+      video: { facingMode: "user" },
+    };
+    const cameraConstraints = {
+      audio: true,
+      video: { deviceId: { exact: deviceId } },
+    };
     try {
-      myStream = await navigator.mediaDevices.getUserMedia({
-        audio: true,
-        video: true,
-      });
+      myStream = await navigator.mediaDevices.getUserMedia(
+        deviceId ? cameraConstraints : initialConstrains
+      );
       myFace.srcObject = myStream;
-      await getCameras();
+      if (!deviceId) {
+        await getCameras();
+      }
     } catch (e) {
       console.log(e);
     }
@@ -223,8 +229,20 @@ socket.on("bye", (left,newCount)=> {
         }
     }
 
+    async function handleCameraChange() {
+      await getMedia(cameraSelect.value);
+      if (myPeerConnection) {
+        const videoTrack = myStream.getVideoTracks()[0];
+        const videoSender = myPeerConnection
+          .getSenders()
+          .find((sender) => sender.track.kind === "video");
+        videoSender.replaceTrack(videoTrack);
+      }
+    }
+
   muteBtn.addEventListener("click", handleMuteClick);
   cameraBtn.addEventListener("click", handleCameraClick);
+  cameraSelect.addEventListener("input", handleCameraChange);
 
   //RTC code
   function makeConnection(){

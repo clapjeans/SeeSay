@@ -223,6 +223,7 @@ button{
     </section><!-- End Pricing Section -->
     <div class="row gy-3" style="margin: 0 auto;">
 
+     
       <div class="col-lg-3 col-md-6">
         <video  id="myFace" autoplay="autoplay", playsinline,muted></video>   </div>
       <div class="col-lg-3 col-md-6" >
@@ -234,7 +235,17 @@ button{
         <div class="panel panel-primary">
                   
           <div class="panel-body" id="chatting">
-      
+            <ul class="chat">
+              <li class="left clearfix">
+                <div class="chat-body clearfix">
+                  <div class="header">
+                    <strong class="primary-font">Chatting</strong>
+                    <small class="pull-right text-muted">
+                      <span class="glyphicon glyphicon-time"></span></small>
+                        </div>
+                    </div>
+                  </li>
+                </ul>
           </div>
           <div class="panel-footer" >
               <div class="input-group" id="chatmsg">
@@ -259,7 +270,7 @@ button{
       <button class="btn  btn-sm" id="mute" style="width:200px" >
         Mute</button>      <button class="btn  btn-sm" id="camera" style="width:200px" >
           camerOff</button> 
-
+          <select id="cameras"></select>
   </div>
   
 
@@ -276,6 +287,7 @@ button{
   <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
 
   <script src="/socket.io/socket.io.js"></script>
+  <script  src="../public/js/app.js"></script>
 
   
   
@@ -291,7 +303,7 @@ button{
   <!-- Template Main JS File -->
   <script type="text/babel" src="../public/assets/js/main.js"></script>
   
-  <script  src="../public/js/app.js"></script>
+
 
 </body>
 

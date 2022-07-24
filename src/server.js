@@ -45,12 +45,11 @@ wsServer.on("connection", (socket) => {
     console.log(wsServer.sockets.adapter);
     console.log(`Socket Event:${event}`); //socket event enter room이 출력됨
   });
-  socket.on("enter_room", (roomName, done) => {
+  socket.on("enter_room", (roomName) => {
     socket.join(roomName); //방에들어가기위해서는 join 만사용하면됨 방에들어가기위해 사용 
-    done();
+  
     //하나의 소켓에만전송,방크기를 welcome 문자와함께 함수실행시킴
-    socket.to(roomName).emit("welcome");
-    socket.to(roomName).emit("welcome",socket.nickname, countRoom(roomName));
+    socket.to(roomName).emit("welcome",countRoom(roomName));
     //연결되 모든 서버에게 새로운방이 만들어졌다고 알리기 
     wsServer.sockets.emit("room_change", publicRooms());
   });
