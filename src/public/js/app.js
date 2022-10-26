@@ -1,7 +1,6 @@
 const socket = io().connect(); //client Server
 
-const welcome = document.getElementById("welcome");
-const form = welcome.querySelector("form");
+
 const room = document.getElementById("room");
 const chatmsg= document.getElementById("chatmsg");
 const ssessoin = "나다"; //세션아이디 여기다가 넣기
@@ -14,9 +13,9 @@ var seconds = ('0' + today.getSeconds()).slice(-2);
 
 var timeString = hours + ':' + minutes  + ':' + seconds;
 
-room.hidden ="true";
 
-let roomName;
+
+let roomName= "SeeSay";
 
 
 //대화 메시지 
@@ -43,8 +42,7 @@ function handleNicknameSubmit(event) {
 
 
 async function showRoom(){
-    welcome.hidden =true;
-    room.hidden=false;
+
     const h3 =room.querySelector("h3");
     h3.innerText=`Room ${roomName}`
     // const msgForm = chatmsg.querySelector("#msg");
@@ -66,15 +64,12 @@ async function showRoom(){
 
 //enter Room 함수 실행 
 async function handleRoomSubmit(event) {
-    event.preventDefault();
-    const input = form.querySelector("input");
+  
    await showRoom();
-    socket.emit("enter_room", input.value); //enterRoom 버튼을 누르면 input.value 이름을 가지고 showRoom함수가실행
-    roomName=input.value; 
-    input.value = "";
+    socket.emit("enter_room", roomName); //enterRoom 버튼을 누르면 input.value 이름을 가지고 showRoom함수가실행
+    
   }
-
-form.addEventListener("submit",handleRoomSubmit);
+  handleRoomSubmit(); 
 
 function addMessage(message){
   console.log(message);
